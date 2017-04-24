@@ -45,22 +45,20 @@ def main():
             tags = server.metadata['ansible_host_groups'].split(',')
             for tag in tags:
               if inventory.has_key(tag):
-                inventory[tag]['hosts'].append(server.networks.items()[0][1][0])
+                inventory[tag]['hosts'].append(server.name)
+                inventory['_meta']['hostvars'][server.name] = {}
+                inventory['_meta']['hostvars'][server.name]['ansible_host'] = server.networks.items()[0][1][0]
               else:
-                inventory[tag] = {"hosts" : [server.networks.items()[0][1][0]]}
+                inventory[tag] = {"hosts" : [server.name]}
+                inventory['_meta']['hostvars'][server.name] = {}
+                inventory['_meta']['hostvars'][server.name]['ansible_host'] = server.networks.items()[0][1][0]
 
           if server.metadata.has_key('ansible_host_vars'):
             hostvars = server.metadata['ansible_host_vars'].split(',')
 
             for hostvar in hostvars:
               key, value = hostvar.split(':')
-              if inventory['_meta']['hostvars'].has_key(server.networks.items()[0][1][0]):
-                  inventory['_meta']['hostvars'][server.networks.items()[0][1][0]][key] = value
-              else:
-                  inventory['_meta']['hostvars'][server.networks.items()[0][1][0]] = {}
-                  inventory['_meta']['hostvars'][server.networks.items()[0][1][0]][key] = value
-
-
+              inventory['_meta']['hostvars'][server.name][key] = value
 
     my_json = json.dumps(inventory, sort_keys=True, indent=4 * ' ')
     print my_json
